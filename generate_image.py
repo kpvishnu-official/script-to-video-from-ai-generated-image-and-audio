@@ -1,29 +1,52 @@
-from diffusers import StableDiffusionPipeline
-import torch
+# Creating Sample image Generator class
+ 
+from src.image.image_generator import ImageGenerator
 import os
 
-# Ensure this directory exists to store your model if you want it locally
-model_id = "Linaqruf/anything-v4.0"
+output_dir = "test_output"
+os.makedirs(output_dir, exist_ok=True)
+# ---------------- PROMPT ---------------- #
+prompt = (
+    "1girl, brown hair, blue dress, sitting bored on grass, "
+    "sunny meadow, soft sunlight, medium shot, centered composition"
+)
 
-print("Loading model (this may take a few minutes on first run)...")
-pipe = StableDiffusionPipeline.from_pretrained(
-    model_id,
-    torch_dtype=torch.float32,
-    use_auth_token=True  # If you use a Hugging Face token
-).to("cpu")
+# Small Model
+gen = ImageGenerator(
+    model_name="runwayml/stable-diffusion-v1-5",
+    use_large_model=False
+)
+image_path = os.path.join(output_dir, "small_model.png")
 
-# Disable safety checker for anime models (optional)
-pipe.safety_checker = None
+result_path, final_prompt = gen.generate(
+    prompt=prompt,
+    output_path=image_path,
+    seed=42  # optional (for consistency)
+)
+image_path = os.path.join(output_dir, "test_image.png")
+# Medium Model
+gen = ImageGenerator(
+    model_name="Lykon/DreamShaper",
+    use_large_model=True
+)
+image_path = os.path.join(output_dir, "medium_model.png")
 
-# Example prompt (tweak to your liking)
-prompt = "1girl, white dress, flower field, sky, flowing hair, anime style, detailed, soft light, masterpiece"
-negative_prompt = "low quality, blurry, ugly, bad anatomy, bad hands"
+result_path, final_prompt = gen.generate(
+    prompt=prompt,
+    output_path=image_path,
+    seed=42  # optional (for consistency)
+)
 
-# Generate image
-print("Generating image...")
-image = pipe(prompt=prompt, negative_prompt=negative_prompt, num_inference_steps=50, guidance_scale=8.0).images[0]
+# Large Model
+gen = ImageGenerator(
+    model_name="Meina/MeinaMix_V11",
+    use_large_model=True
+)
+image_path = os.path.join(output_dir, "large_model.png")
 
-# Save
-output_path = "anime_image.png"
-image.save(output_path)
-print(f"Image saved to: {output_path}")
+result_path, final_prompt = gen.generate(
+    prompt=prompt,
+    output_path=image_path,
+    seed=42  # optional (for consistency)
+)
+
